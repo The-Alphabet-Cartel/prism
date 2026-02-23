@@ -1,0 +1,31 @@
+# ============================================================================
+# Prism Bot - Docker Compose
+# ============================================================================
+# FILE VERSION: v1.1.0
+# Repository: https://github.com/the-alphabet-cartel/prism
+# Community: The Alphabet Cartel - https://discord.gg/alphabetcartel
+# ============================================================================
+
+services:
+  prism-bot:
+    image: ghcr.io/the-alphabet-cartel/prism:latest
+    container_name: prism-bot
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      BOT_TOKEN_FILE: /run/secrets/bot_token
+    secrets:
+      - bot_token
+    volumes:
+      - /opt/bragi/bots/prism-bot/logs:/app/logs
+      - /opt/bragi/bots/prism-bot/data:/app/data
+    networks:
+      - bragi
+
+secrets:
+  bot_token:
+    file: ./secrets/discord_token
+
+networks:
+  bragi:
+    external: true

@@ -1,0 +1,66 @@
+{
+  "_metadata": {
+    "file_version": "v1.0.0",
+    "last_modified": "2026-02-22",
+    "bot": "prism-bot",
+    "clean_architecture": "Compliant"
+  },
+
+  "logging": {
+    "description": "Logging configuration for prism-bot",
+    "level": "INFO",
+    "format": "human",
+    "file": "/app/logs/prism-bot.log",
+    "console": true,
+    "validation": {
+      "level": {
+        "type": "string",
+        "allowed_values": ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
+        "required": true
+      },
+      "format": {
+        "type": "string",
+        "allowed_values": ["human", "json"],
+        "required": true
+      }
+    }
+  },
+
+  "bot": {
+    "description": "Core bot settings",
+    "command_prefix": "!",
+    "guild_id": "",
+    "validation": {
+      "command_prefix": {
+        "type": "string",
+        "required": false
+      },
+      "guild_id": {
+        "type": "string",
+        "required": false
+      }
+    }
+  },
+
+  "channels": {
+    "description": "Fluxer channel IDs that prism-bot monitors",
+    "introductions": "1475174156056847605",
+    "validation": {
+      "introductions": {
+        "type": "string",
+        "required": true
+      }
+    }
+  },
+
+  "roles": {
+    "description": "Fluxer role IDs that prism-bot manages",
+    "saldato": "",
+    "validation": {
+      "saldato": {
+        "type": "string",
+        "required": true
+      }
+    }
+  }
+}

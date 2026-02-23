@@ -1,0 +1,9 @@
+# ============================================================================
+# Prism Bot - Requirements
+# ============================================================================
+# FILE VERSION: v1.1.0
+# Repository: https://github.com/the-alphabet-cartel/prism
+# Community: The Alphabet Cartel - https://discord.gg/alphabetcartel
+# ============================================================================
+
+discord.py==2.3.2
