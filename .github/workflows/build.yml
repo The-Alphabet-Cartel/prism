@@ -1,5 +1,5 @@
 # ============================================================================
-# Bragi v1.0 GitHub Actions Workflow
+# Prism v1.0 GitHub Actions Workflow
 # ============================================================================
 # FILE VERSION: v1.0
 # Repository: https://github.com/the-alphabet-cartel/bragi
@@ -11,7 +11,7 @@
 #
 # ============================================================================
 
-name: Build and Push Bragi
+name: Build and Push Prism
 
 on:
   push:
