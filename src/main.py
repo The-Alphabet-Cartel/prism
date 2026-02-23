@@ -80,6 +80,15 @@ def main() -> None:
     )
 
     # -------------------------------------------------------------------------
+    # on_error — surface tracebacks that fluxer swallows
+    # -------------------------------------------------------------------------
+    @bot.event
+    async def on_error(event: str, *args, **kwargs) -> None:
+        import traceback
+        log.error(f"Unhandled exception in event '{event}':")
+        log.error(traceback.format_exc())
+
+    # -------------------------------------------------------------------------
     # on_ready — listeners registered here, called after bot is connected
     # -------------------------------------------------------------------------
     @bot.event
