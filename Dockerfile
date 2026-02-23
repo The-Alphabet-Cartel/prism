@@ -1,7 +1,7 @@
 # ============================================================================
 # Prism Bot - Dockerfile
 # ============================================================================
-# FILE VERSION: v1.1.0
+# FILE VERSION: v1.2.0
 # Repository: https://github.com/the-alphabet-cartel/prism
 # Community: The Alphabet Cartel - https://discord.gg/alphabetcartel
 # ============================================================================
@@ -29,6 +29,7 @@ ARG DEFAULT_UID=1000
 ARG DEFAULT_GID=1000
 
 ENV PATH="/opt/venv/bin:$PATH"
+ENV PYTHONPATH="/app"
 
 # Install tini for signal handling + groupmod/usermod utilities
 RUN apt-get update && apt-get install -y --no-install-recommends \
