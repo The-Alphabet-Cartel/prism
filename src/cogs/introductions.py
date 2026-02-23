@@ -93,9 +93,9 @@ class IntroductionsCog(fluxer.Cog):
             self.log.error(f"Failed to assign Saldato role to {member}: {e}")
 
 
-def setup(
+async def setup(
     bot: fluxer.Bot,
     config_manager: ConfigManager,
     logging_manager: LoggingConfigManager,
 ) -> None:
-    bot.add_cog(IntroductionsCog(bot, config_manager, logging_manager))
+    await bot.add_cog(IntroductionsCog(bot, config_manager, logging_manager))

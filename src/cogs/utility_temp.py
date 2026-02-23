@@ -83,9 +83,9 @@ class UtilityTempCog(fluxer.Cog):
                 await message.reply(chunk)
 
 
-def setup(
+async def setup(
     bot: fluxer.Bot,
     config_manager: ConfigManager,
     logging_manager: LoggingConfigManager,
 ) -> None:
-    bot.add_cog(UtilityTempCog(bot, config_manager, logging_manager))
+    await bot.add_cog(UtilityTempCog(bot, config_manager, logging_manager))
