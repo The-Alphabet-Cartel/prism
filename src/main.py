@@ -14,7 +14,7 @@ MISSION - NEVER TO BE VIOLATED:
 Main entry point for prism-bot. Initialises managers, configures the Fluxer
 client, loads cogs, and starts the bot.
 ----------------------------------------------------------------------------
-FILE VERSION: v1.0.0
+FILE VERSION: v1.1.0
 LAST MODIFIED: 2026-02-22
 BOT: prism-bot
 CLEAN ARCHITECTURE: Compliant
@@ -93,12 +93,19 @@ async def main() -> None:
 
 async def _load_cogs(bot, config_manager, logging_manager, log) -> None:
     from src.cogs.introductions import setup as setup_introductions
+    from src.cogs.utility_temp import setup as setup_utility_temp
 
     try:
         await setup_introductions(bot, config_manager, logging_manager)
         log.success("Loaded cog: introductions")  # type: ignore[attr-defined]
     except Exception as e:
         log.error(f"Failed to load introductions cog: {e}")
+
+    try:
+        await setup_utility_temp(bot, config_manager, logging_manager)
+        log.success("Loaded cog: utility_temp (TEMPORARY — remove after setup)")  # type: ignore[attr-defined]
+    except Exception as e:
+        log.error(f"Failed to load utility_temp cog: {e}")
 
 
 if __name__ == "__main__":

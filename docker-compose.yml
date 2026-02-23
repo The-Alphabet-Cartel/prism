@@ -24,7 +24,7 @@ services:
 
 secrets:
   bot_token:
-    file: ./secrets/discord_token
+    file: ./secrets/fluxer_token
 
 networks:
   bragi:

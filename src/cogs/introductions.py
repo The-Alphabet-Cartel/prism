@@ -14,7 +14,7 @@ MISSION - NEVER TO BE VIOLATED:
 Introductions cog for prism-bot. Listens for messages in the #introductions
 channel and assigns the Saldato role to members who post there.
 ----------------------------------------------------------------------------
-FILE VERSION: v1.0.0
+FILE VERSION: v1.1.0
 LAST MODIFIED: 2026-02-22
 BOT: prism-bot
 CLEAN ARCHITECTURE: Compliant
@@ -74,9 +74,12 @@ class IntroductionsCog(commands.Cog):
             )
             return
 
-        # Skip if already assigned
-        if saldato_role in member.roles:
-            self.log.debug(f"{member} already has Saldato — skipping")
+        # Skip if the member already has any roles beyond @everyone
+        assignable_roles = [r for r in member.roles if r.name != "@everyone"]
+        if assignable_roles:
+            self.log.debug(
+                f"{member} already has roles {[r.name for r in assignable_roles]} — skipping"
+            )
             return
 
         # Assign the role
