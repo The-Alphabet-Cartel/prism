@@ -17,7 +17,7 @@ client, loads handlers, and starts the bot.
 Single on_message dispatcher pattern used because fluxer-py only supports
 one registered handler per event type.
 ----------------------------------------------------------------------------
-FILE VERSION: v1.8.0
+FILE VERSION: v1.9.0
 LAST MODIFIED: 2026-02-24
 BOT: prism-bot
 CLEAN ARCHITECTURE: Compliant
@@ -101,14 +101,17 @@ def main() -> None:
     async def on_message(message: fluxer.Message) -> None:
         if message.author.bot:
             return
+        # Commands (! prefix) are routed to utility only — never trigger role assignment
+        if message.content.startswith("!"):
+            try:
+                await utility_temp.handle(message)
+            except Exception as e:
+                log.error(f"utility handler error: {e}\n{traceback.format_exc()}")
+            return
         try:
             await introductions.handle(message)
         except Exception as e:
             log.error(f"introductions handler error: {e}\n{traceback.format_exc()}")
-        try:
-            await utility_temp.handle(message)
-        except Exception as e:
-            log.error(f"utility_temp handler error: {e}\n{traceback.format_exc()}")
 
     # -------------------------------------------------------------------------
     # on_error — surface any remaining unhandled exceptions
