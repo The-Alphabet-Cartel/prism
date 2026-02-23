@@ -15,7 +15,7 @@ Temporary utility cog for prism-bot. Provides a !roles command that lists
 all roles and their IDs in the guild. Remove this cog once role IDs have
 been captured and added to configuration.
 ----------------------------------------------------------------------------
-FILE VERSION: v1.4.0
+FILE VERSION: v1.5.0
 LAST MODIFIED: 2026-02-23
 BOT: prism-bot
 CLEAN ARCHITECTURE: Compliant
@@ -42,13 +42,21 @@ class UtilityTempCog(fluxer.Cog):
         self.config = config_manager
         self.log = logging_manager.get_logger("utility_temp")
 
-    @fluxer.Bot.command(name="roles")
-    async def list_roles(self, ctx: object) -> None:
-        """Lists all roles in the guild with their IDs."""
-        guild = getattr(ctx, "guild", None)
-        if guild is None:
-            await ctx.send("❌ This command must be used in a guild.")
+    @fluxer.Cog.listener()
+    async def on_message(self, message: fluxer.Message) -> None:
+        """Handles !roles command via message event."""
+        if message.author.bot:
             return
+
+        if not message.content.strip().lower() == "!roles":
+            return
+
+        guild = message.guild
+        if guild is None:
+            await message.reply("❌ This command must be used in a guild.")
+            return
+
+        self.log.info(f"!roles used by {message.author} in #{message.channel}")
 
         lines = ["**Guild Roles and IDs:**\n```"]
         for role in sorted(guild.roles, key=lambda r: r.position, reverse=True):
@@ -57,7 +65,9 @@ class UtilityTempCog(fluxer.Cog):
 
         output = "\n".join(lines)
 
-        if len(output) > 2000:
+        if len(output) <= 2000:
+            await message.reply(output)
+        else:
             chunks = []
             chunk = ["**Guild Roles and IDs:**\n```"]
             for role in sorted(guild.roles, key=lambda r: r.position, reverse=True):
@@ -70,11 +80,7 @@ class UtilityTempCog(fluxer.Cog):
             chunk.append("```")
             chunks.append("\n".join(chunk))
             for chunk in chunks:
-                await ctx.send(chunk)
-        else:
-            await ctx.send(output)
-
-        self.log.info(f"!roles used by {ctx.author} in #{ctx.channel}")
+                await message.reply(chunk)
 
 
 def setup(
