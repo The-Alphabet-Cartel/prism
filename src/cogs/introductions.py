@@ -14,7 +14,7 @@ MISSION - NEVER TO BE VIOLATED:
 Introductions handler for prism-bot. Pure logic class — no event
 registration. Called by the dispatcher in main.py.
 ----------------------------------------------------------------------------
-FILE VERSION: v1.14.0
+FILE VERSION: v1.15.0
 LAST MODIFIED: 2026-02-24
 BOT: prism-bot
 CLEAN ARCHITECTURE: Compliant
@@ -58,37 +58,28 @@ class IntroductionsHandler:
         if message.channel.id != self.introductions_channel_id:
             return
 
-        # Get guild via fetch (fluxer-py uses async fetch, not sync get)
         guild_id = message.channel.guild_id
+
+        # Fetch guild, member, and roles in one block
         try:
             guild = await self.bot.fetch_guild(guild_id)
-        except Exception as e:
-            self.log.error(f"Could not fetch guild {guild_id}: {e}")
-            return
-
-        # Get full member object via fetch (has .roles, unlike User)
-        try:
             member = await guild.fetch_member(message.author.id)
+            roles = await guild.fetch_roles()
         except Exception as e:
-            self.log.warning(f"Could not fetch member {message.author.id}: {e}")
+            self.log.error(f"Could not fetch guild data: {e}")
             return
 
+        # member.roles is a list of role IDs (ints) in fluxer-py
         # Skip if member already has roles beyond @everyone
-        assignable_roles = [r for r in member.roles if r.name != "@everyone"]
-        if assignable_roles:
+        everyone_id = next((r.id for r in roles if r.name == "@everyone"), None)
+        assignable_role_ids = [r for r in member.roles if r != everyone_id]
+        if assignable_role_ids:
             self.log.debug(
-                f"Skipping {member} — already has roles: "
-                f"{[r.name for r in assignable_roles]}"
+                f"Skipping {message.author} — already has {len(assignable_role_ids)} role(s)"
             )
             return
 
-        # Fetch roles and find Saldato by ID
-        try:
-            roles = await guild.fetch_roles()
-        except Exception as e:
-            self.log.error(f"Could not fetch roles for guild {guild_id}: {e}")
-            return
-
+        # Find Saldato role
         saldato_role = next((r for r in roles if r.id == self.saldato_role_id), None)
         if saldato_role is None:
             self.log.warning(
@@ -97,7 +88,7 @@ class IntroductionsHandler:
             )
             return
 
-        # Assign role
+        # Assign role and welcome
         try:
             await member.add_role(
                 saldato_role.id,
@@ -119,8 +110,8 @@ class IntroductionsHandler:
             )
         except fluxer.Forbidden:
             self.log.error(
-                f"Missing permissions to assign Saldato to {member} — "
+                f"Missing permissions to assign Saldato to {message.author} — "
                 "check role hierarchy"
             )
         except fluxer.HTTPException as e:
-            self.log.error(f"API error assigning Saldato to {member}: {e}")
+            self.log.error(f"API error assigning Saldato to {message.author}: {e}")

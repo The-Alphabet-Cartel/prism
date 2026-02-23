@@ -14,7 +14,7 @@ MISSION - NEVER TO BE VIOLATED:
 Utility handler for prism-bot. Provides staff commands for server management.
 Currently implements !roles (admin-only) for listing guild roles and IDs.
 ----------------------------------------------------------------------------
-FILE VERSION: v2.0.0
+FILE VERSION: v2.1.0
 LAST MODIFIED: 2026-02-24
 BOT: prism-bot
 CLEAN ARCHITECTURE: Compliant
@@ -59,8 +59,8 @@ class UtilityTempHandler:
             self.log.error(f"Could not fetch guild data: {e}")
             return
 
-        # Build a set of role IDs the member has
-        member_role_ids = {r.id for r in member.roles}
+        # Build a set of role IDs the member has (member.roles is list of ints)
+        member_role_ids = set(member.roles)
 
         # Check if any of the member's roles have administrator permission
         # Fluxer uses the same permissions bitfield as Discord: 0x8 = Administrator
@@ -70,10 +70,9 @@ class UtilityTempHandler:
         )
 
         if not is_admin:
-            self.log.info(
-                f"!roles denied for {message.author} — not an administrator"
+            self.log.debug(
+                f"!roles ignored for {message.author} — not an administrator"
             )
-            await message.reply("❌ You need Administrator permissions to use this command.")
             return
 
         self.log.info(f"!roles used by {message.author} in #{message.channel}")
