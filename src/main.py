@@ -14,7 +14,7 @@ MISSION - NEVER TO BE VIOLATED:
 Main entry point for prism-bot. Initialises managers, configures the Fluxer
 client, loads cogs, and starts the bot.
 ----------------------------------------------------------------------------
-FILE VERSION: v1.3.0
+FILE VERSION: v1.4.0
 LAST MODIFIED: 2026-02-22
 BOT: prism-bot
 CLEAN ARCHITECTURE: Compliant
@@ -22,7 +22,6 @@ Repository: https://github.com/PapaBearDoes/bragi
 ============================================================================
 """
 
-import asyncio
 import sys
 
 import fluxer
@@ -31,7 +30,7 @@ from src.managers.config_manager import create_config_manager
 from src.managers.logging_config_manager import create_logging_config_manager
 
 
-async def main() -> None:
+def main() -> None:
 
     # -------------------------------------------------------------------------
     # Initialise logging (must be first)
@@ -70,7 +69,6 @@ async def main() -> None:
 
     # -------------------------------------------------------------------------
     # Initialise Fluxer client
-    # Note: Fluxer does not support intents yet — pass default intents
     # -------------------------------------------------------------------------
     intents = fluxer.Intents.default()
     intents.message_content = True
@@ -79,33 +77,36 @@ async def main() -> None:
     bot = fluxer.Bot(command_prefix=config_manager.get("bot", "command_prefix", "!"), intents=intents)
 
     # -------------------------------------------------------------------------
-    # Load cogs
+    # Load cogs and register events
     # -------------------------------------------------------------------------
+    _register_cogs(bot, config_manager, logging_manager, log)
+
     @bot.event
     async def on_ready() -> None:
         log.success(f"prism-bot connected as {bot.user} (ID: {bot.user.id})")  # type: ignore[attr-defined]
-        await _load_cogs(bot, config_manager, logging_manager, log)
 
-    async with bot:
-        await bot.start(token)
+    # -------------------------------------------------------------------------
+    # Start — bot.run() is blocking
+    # -------------------------------------------------------------------------
+    bot.run(token)
 
 
-async def _load_cogs(bot: fluxer.Bot, config_manager, logging_manager, log) -> None:
+def _register_cogs(bot: fluxer.Bot, config_manager, logging_manager, log) -> None:
     from src.cogs.introductions import setup as setup_introductions
     from src.cogs.utility_temp import setup as setup_utility_temp
 
     try:
-        await setup_introductions(bot, config_manager, logging_manager)
+        setup_introductions(bot, config_manager, logging_manager)
         log.success("Loaded cog: introductions")  # type: ignore[attr-defined]
     except Exception as e:
         log.error(f"Failed to load introductions cog: {e}")
 
     try:
-        await setup_utility_temp(bot, config_manager, logging_manager)
+        setup_utility_temp(bot, config_manager, logging_manager)
         log.success("Loaded cog: utility_temp (TEMPORARY — remove after setup)")  # type: ignore[attr-defined]
     except Exception as e:
         log.error(f"Failed to load utility_temp cog: {e}")
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    main()

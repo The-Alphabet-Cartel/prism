@@ -15,7 +15,7 @@ Temporary utility cog for prism-bot. Provides a !roles command that lists
 all roles and their IDs in the guild. Remove this cog once role IDs have
 been captured and added to configuration.
 ----------------------------------------------------------------------------
-FILE VERSION: v1.2.0
+FILE VERSION: v1.3.0
 LAST MODIFIED: 2026-02-22
 BOT: prism-bot
 CLEAN ARCHITECTURE: Compliant
@@ -87,9 +87,9 @@ class UtilityTempCog(commands.Cog):
             self.log.error(f"Unexpected error in !roles: {error}")
 
 
-async def setup(
+def setup(
     bot: fluxer.Bot,
     config_manager: ConfigManager,
     logging_manager: LoggingConfigManager,
 ) -> None:
-    await bot.add_cog(UtilityTempCog(bot, config_manager, logging_manager))
+    bot.add_cog(UtilityTempCog(bot, config_manager, logging_manager))

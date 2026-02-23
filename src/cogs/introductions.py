@@ -14,7 +14,7 @@ MISSION - NEVER TO BE VIOLATED:
 Introductions cog for prism-bot. Listens for messages in the #introductions
 channel and assigns the Saldato role to members who post there.
 ----------------------------------------------------------------------------
-FILE VERSION: v1.3.0
+FILE VERSION: v1.4.0
 LAST MODIFIED: 2026-02-22
 BOT: prism-bot
 CLEAN ARCHITECTURE: Compliant
@@ -94,9 +94,9 @@ class IntroductionsCog(commands.Cog):
             self.log.error(f"Failed to assign Saldato role to {member}: {e}")
 
 
-async def setup(
+def setup(
     bot: fluxer.Bot,
     config_manager: ConfigManager,
     logging_manager: LoggingConfigManager,
 ) -> None:
-    await bot.add_cog(IntroductionsCog(bot, config_manager, logging_manager))
+    bot.add_cog(IntroductionsCog(bot, config_manager, logging_manager))
