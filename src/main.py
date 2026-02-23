@@ -12,9 +12,12 @@ MISSION - NEVER TO BE VIOLATED:
 
 ============================================================================
 Main entry point for prism-bot. Initialises managers, configures the Fluxer
-client, loads cogs, and starts the bot.
+client, loads handlers, and starts the bot.
+
+Single on_message dispatcher pattern used because fluxer-py only supports
+one registered handler per event type.
 ----------------------------------------------------------------------------
-FILE VERSION: v1.6.0
+FILE VERSION: v1.7.0
 LAST MODIFIED: 2026-02-23
 BOT: prism-bot
 CLEAN ARCHITECTURE: Compliant
@@ -23,6 +26,7 @@ Repository: https://github.com/PapaBearDoes/bragi
 """
 
 import sys
+import traceback
 
 import fluxer
 
@@ -49,7 +53,6 @@ def main() -> None:
         log.critical(f"Failed to initialise ConfigManager: {e}")
         sys.exit(1)
 
-    # Reconfigure logging with values from config/env
     logging_manager = create_logging_config_manager(
         log_level=config_manager.get("logging", "level", "INFO"),
         log_format=config_manager.get("logging", "format", "human"),
@@ -80,43 +83,51 @@ def main() -> None:
     )
 
     # -------------------------------------------------------------------------
-    # on_error — surface tracebacks that fluxer swallows
+    # Initialise handlers (pure logic, no event registration)
+    # -------------------------------------------------------------------------
+    from src.cogs.introductions import IntroductionsHandler
+    from src.cogs.utility_temp import UtilityTempHandler
+
+    introductions = IntroductionsHandler(config_manager, logging_manager)
+    log.success("Loaded handler: introductions")  # type: ignore[attr-defined]
+
+    utility_temp = UtilityTempHandler(logging_manager)
+    log.success("Loaded handler: utility_temp (TEMPORARY — remove after setup)")  # type: ignore[attr-defined]
+
+    # -------------------------------------------------------------------------
+    # Single on_message dispatcher — routes to all handlers in order
+    # -------------------------------------------------------------------------
+    @bot.event
+    async def on_message(message: fluxer.Message) -> None:
+        if message.author.bot:
+            return
+        try:
+            await introductions.handle(message)
+        except Exception as e:
+            log.error(f"introductions handler error: {e}\n{traceback.format_exc()}")
+        try:
+            await utility_temp.handle(message)
+        except Exception as e:
+            log.error(f"utility_temp handler error: {e}\n{traceback.format_exc()}")
+
+    # -------------------------------------------------------------------------
+    # on_error — surface any remaining unhandled exceptions
     # -------------------------------------------------------------------------
     @bot.event
     async def on_error(event: str, *args, **kwargs) -> None:
-        import traceback
-        log.error(f"Unhandled exception in event '{event}':")
-        log.error(traceback.format_exc())
+        log.error(f"Unhandled exception in event '{event}':\n{traceback.format_exc()}")
 
     # -------------------------------------------------------------------------
-    # on_ready — listeners registered here, called after bot is connected
+    # on_ready
     # -------------------------------------------------------------------------
     @bot.event
     async def on_ready() -> None:
-        _register_cogs(bot, config_manager, logging_manager, log)
         log.success(f"prism-bot connected as {bot.user} (ID: {bot.user.id})")  # type: ignore[attr-defined]
 
     # -------------------------------------------------------------------------
     # Start — bot.run() is blocking
     # -------------------------------------------------------------------------
     bot.run(token)
-
-
-def _register_cogs(bot: fluxer.Bot, config_manager, logging_manager, log) -> None:
-    from src.cogs.introductions import setup as setup_introductions
-    from src.cogs.utility_temp import setup as setup_utility_temp
-
-    try:
-        setup_introductions(bot, config_manager, logging_manager)
-        log.success("Loaded cog: introductions")  # type: ignore[attr-defined]
-    except Exception as e:
-        log.error(f"Failed to load introductions cog: {e}")
-
-    try:
-        setup_utility_temp(bot, config_manager, logging_manager)
-        log.success("Loaded cog: utility_temp (TEMPORARY — remove after setup)")  # type: ignore[attr-defined]
-    except Exception as e:
-        log.error(f"Failed to load utility_temp cog: {e}")
 
 
 if __name__ == "__main__":
