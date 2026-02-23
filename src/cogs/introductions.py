@@ -14,7 +14,7 @@ MISSION - NEVER TO BE VIOLATED:
 Introductions handler for prism-bot. Pure logic class — no event
 registration. Called by the dispatcher in main.py.
 ----------------------------------------------------------------------------
-FILE VERSION: v1.12.0
+FILE VERSION: v1.13.0
 LAST MODIFIED: 2026-02-23
 BOT: prism-bot
 CLEAN ARCHITECTURE: Compliant
@@ -105,7 +105,7 @@ class IntroductionsHandler:
                 reason="Introduction posted in #introductions",
             )
             self.log.success(  # type: ignore[attr-defined]
-                f"Assigned Saldato to {member} (ID: {member.id})"
+                f"Assigned Saldato to {member} (ID: {message.author.id})"
             )
         except fluxer.Forbidden:
             self.log.error(
