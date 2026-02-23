@@ -11,11 +11,10 @@ MISSION - NEVER TO BE VIOLATED:
     Sustain  → Run reliably so our community always has what it needs
 
 ============================================================================
-Temporary utility cog for prism-bot. Provides a !roles command that lists
-all roles and their IDs in the guild. Remove this cog once role IDs have
-been captured and added to configuration.
+Temporary utility handler for prism-bot. Provides a !roles command that
+lists all roles and their IDs in the guild. Remove after role IDs captured.
 ----------------------------------------------------------------------------
-FILE VERSION: v1.5.0
+FILE VERSION: v1.6.0
 LAST MODIFIED: 2026-02-23
 BOT: prism-bot
 CLEAN ARCHITECTURE: Compliant
@@ -29,26 +28,21 @@ from src.managers.config_manager import ConfigManager
 from src.managers.logging_config_manager import LoggingConfigManager
 
 
-class UtilityTempCog(fluxer.Cog):
-    """Temporary utility commands for setup and diagnostics. Remove after use."""
+def setup(
+    bot: fluxer.Bot,
+    config_manager: ConfigManager,
+    logging_manager: LoggingConfigManager,
+) -> None:
+    """Register the !roles command listener directly on the bot."""
 
-    def __init__(
-        self,
-        bot: fluxer.Bot,
-        config_manager: ConfigManager,
-        logging_manager: LoggingConfigManager,
-    ) -> None:
-        self.bot = bot
-        self.config = config_manager
-        self.log = logging_manager.get_logger("utility_temp")
+    log = logging_manager.get_logger("utility_temp")
 
-    @fluxer.Cog.listener()
-    async def on_message(self, message: fluxer.Message) -> None:
-        """Handles !roles command via message event."""
+    @bot.event
+    async def on_message(message: fluxer.Message) -> None:
         if message.author.bot:
             return
 
-        if not message.content.strip().lower() == "!roles":
+        if message.content.strip().lower() != "!roles":
             return
 
         guild = message.guild
@@ -56,7 +50,7 @@ class UtilityTempCog(fluxer.Cog):
             await message.reply("❌ This command must be used in a guild.")
             return
 
-        self.log.info(f"!roles used by {message.author} in #{message.channel}")
+        log.info(f"!roles used by {message.author} in #{message.channel}")
 
         lines = ["**Guild Roles and IDs:**\n```"]
         for role in sorted(guild.roles, key=lambda r: r.position, reverse=True):
@@ -70,7 +64,9 @@ class UtilityTempCog(fluxer.Cog):
         else:
             chunks = []
             chunk = ["**Guild Roles and IDs:**\n```"]
-            for role in sorted(guild.roles, key=lambda r: r.position, reverse=True):
+            for role in sorted(
+                guild.roles, key=lambda r: r.position, reverse=True
+            ):
                 line = f"{role.name:<40} {role.id}"
                 if sum(len(ln) for ln in chunk) + len(line) > 1900:
                     chunk.append("```")
@@ -81,11 +77,3 @@ class UtilityTempCog(fluxer.Cog):
             chunks.append("\n".join(chunk))
             for chunk in chunks:
                 await message.reply(chunk)
-
-
-async def setup(
-    bot: fluxer.Bot,
-    config_manager: ConfigManager,
-    logging_manager: LoggingConfigManager,
-) -> None:
-    await bot.add_cog(UtilityTempCog(bot, config_manager, logging_manager))

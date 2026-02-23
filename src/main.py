@@ -14,7 +14,7 @@ MISSION - NEVER TO BE VIOLATED:
 Main entry point for prism-bot. Initialises managers, configures the Fluxer
 client, loads cogs, and starts the bot.
 ----------------------------------------------------------------------------
-FILE VERSION: v1.5.0
+FILE VERSION: v1.6.0
 LAST MODIFIED: 2026-02-23
 BOT: prism-bot
 CLEAN ARCHITECTURE: Compliant
@@ -80,11 +80,11 @@ def main() -> None:
     )
 
     # -------------------------------------------------------------------------
-    # on_ready — cogs registered here so await works inside the event loop
+    # on_ready — listeners registered here, called after bot is connected
     # -------------------------------------------------------------------------
     @bot.event
     async def on_ready() -> None:
-        await _register_cogs(bot, config_manager, logging_manager, log)
+        _register_cogs(bot, config_manager, logging_manager, log)
         log.success(f"prism-bot connected as {bot.user} (ID: {bot.user.id})")  # type: ignore[attr-defined]
 
     # -------------------------------------------------------------------------
@@ -93,18 +93,18 @@ def main() -> None:
     bot.run(token)
 
 
-async def _register_cogs(bot: fluxer.Bot, config_manager, logging_manager, log) -> None:
+def _register_cogs(bot: fluxer.Bot, config_manager, logging_manager, log) -> None:
     from src.cogs.introductions import setup as setup_introductions
     from src.cogs.utility_temp import setup as setup_utility_temp
 
     try:
-        await setup_introductions(bot, config_manager, logging_manager)
+        setup_introductions(bot, config_manager, logging_manager)
         log.success("Loaded cog: introductions")  # type: ignore[attr-defined]
     except Exception as e:
         log.error(f"Failed to load introductions cog: {e}")
 
     try:
-        await setup_utility_temp(bot, config_manager, logging_manager)
+        setup_utility_temp(bot, config_manager, logging_manager)
         log.success("Loaded cog: utility_temp (TEMPORARY — remove after setup)")  # type: ignore[attr-defined]
     except Exception as e:
         log.error(f"Failed to load utility_temp cog: {e}")

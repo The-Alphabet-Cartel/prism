@@ -11,10 +11,10 @@ MISSION - NEVER TO BE VIOLATED:
     Sustain  → Run reliably so our community always has what it needs
 
 ============================================================================
-Introductions cog for prism-bot. Listens for messages in the #introductions
-channel and assigns the Saldato role to members who post there.
+Introductions handler for prism-bot. Assigns the Saldato role to members
+who post in #introductions and have no existing roles beyond @everyone.
 ----------------------------------------------------------------------------
-FILE VERSION: v1.5.0
+FILE VERSION: v1.6.0
 LAST MODIFIED: 2026-02-23
 BOT: prism-bot
 CLEAN ARCHITECTURE: Compliant
@@ -28,74 +28,76 @@ from src.managers.config_manager import ConfigManager
 from src.managers.logging_config_manager import LoggingConfigManager
 
 
-class IntroductionsCog(fluxer.Cog):
-    """Assigns the Saldato role when a member posts in #introductions."""
-
-    def __init__(
-        self,
-        bot: fluxer.Bot,
-        config_manager: ConfigManager,
-        logging_manager: LoggingConfigManager,
-    ) -> None:
-        self.bot = bot
-        self.config = config_manager
-        self.log = logging_manager.get_logger("introductions")
-
-        self.introductions_channel_id = config_manager.get_int("channels", "introductions")
-        self.saldato_role_id = config_manager.get_int("roles", "saldato")
-
-        if not self.introductions_channel_id:
-            self.log.warning("Introductions channel ID is not configured")
-        if not self.saldato_role_id:
-            self.log.warning("Saldato role ID is not configured")
-
-    @fluxer.Cog.listener()
-    async def on_message(self, message: fluxer.Message) -> None:
-        # Ignore bots
-        if message.author.bot:
-            return
-
-        # Only act in the introductions channel
-        if message.channel.id != self.introductions_channel_id:
-            return
-
-        guild = message.guild
-        if guild is None:
-            return
-
-        member = message.author
-
-        # Resolve the Saldato role
-        saldato_role = guild.get_role(self.saldato_role_id)
-        if saldato_role is None:
-            self.log.error(
-                f"Saldato role ID {self.saldato_role_id} not found in guild {guild.id}"
-            )
-            return
-
-        # Skip if the member already has any roles beyond @everyone
-        assignable_roles = [r for r in member.roles if r.name != "@everyone"]
-        if assignable_roles:
-            self.log.debug(
-                f"{member} already has roles {[r.name for r in assignable_roles]} — skipping"
-            )
-            return
-
-        # Assign the role
-        try:
-            await member.add_roles(saldato_role, reason="Introduction posted in #introductions")
-            self.log.success(  # type: ignore[attr-defined]
-                f"Assigned Saldato to {member} (ID: {member.id})"
-            )
-        except fluxer.Forbidden:
-            self.log.error(f"Missing permissions to assign Saldato role to {member}")
-        except fluxer.HTTPException as e:
-            self.log.error(f"Failed to assign Saldato role to {member}: {e}")
-
-
-async def setup(
+def setup(
     bot: fluxer.Bot,
     config_manager: ConfigManager,
     logging_manager: LoggingConfigManager,
 ) -> None:
-    await bot.add_cog(IntroductionsCog(bot, config_manager, logging_manager))
+    """Register the introductions on_message listener directly on the bot."""
+
+    log = logging_manager.get_logger("introductions")
+
+    # Read channel and role IDs from config
+    introductions_channel_id = config_manager.get_int(
+        "channels", "introductions", 0
+    )
+    saldato_role_id = config_manager.get_int("roles", "saldato", 0)
+
+    if not introductions_channel_id:
+        log.warning("Introductions channel ID is not configured")
+    if not saldato_role_id:
+        log.warning("Saldato role ID is not configured")
+
+    @bot.event
+    async def on_message(message: fluxer.Message) -> None:
+        # Ignore bots
+        if message.author.bot:
+            return
+
+        # Only act in #introductions
+        if message.channel.id != introductions_channel_id:
+            return
+
+        # Resolve member
+        member = message.author
+        if member is None:
+            return
+
+        # Skip if member already has roles beyond @everyone
+        assignable_roles = [r for r in member.roles if r.name != "@everyone"]
+        if assignable_roles:
+            log.debug(
+                f"Skipping {member} — already has roles: "
+                f"{[r.name for r in assignable_roles]}"
+            )
+            return
+
+        # Resolve the Saldato role object
+        guild = message.guild
+        if guild is None:
+            return
+
+        saldato_role = guild.get_role(saldato_role_id)
+        if saldato_role is None:
+            log.warning(
+                f"Saldato role ID {saldato_role_id} not found in guild — "
+                "check PRISM_SALDATO_ROLE_ID in .env"
+            )
+            return
+
+        # Assign role
+        try:
+            await member.add_roles(
+                saldato_role,
+                reason="Introduction posted in #introductions",
+            )
+            log.success(  # type: ignore[attr-defined]
+                f"Assigned Saldato to {member} (ID: {member.id})"
+            )
+        except fluxer.Forbidden:
+            log.error(
+                f"Missing permissions to assign Saldato to {member} — "
+                "check role hierarchy"
+            )
+        except fluxer.HTTPException as e:
+            log.error(f"API error assigning Saldato to {member}: {e}")
