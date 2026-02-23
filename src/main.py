@@ -88,10 +88,10 @@ def main() -> None:
     from src.cogs.introductions import IntroductionsHandler
     from src.cogs.utility_temp import UtilityTempHandler
 
-    introductions = IntroductionsHandler(config_manager, logging_manager)
+    introductions = IntroductionsHandler(bot, config_manager, logging_manager)
     log.success("Loaded handler: introductions")  # type: ignore[attr-defined]
 
-    utility_temp = UtilityTempHandler(logging_manager)
+    utility_temp = UtilityTempHandler(bot, config_manager, logging_manager)
     log.success("Loaded handler: utility_temp (TEMPORARY — remove after setup)")  # type: ignore[attr-defined]
 
     # -------------------------------------------------------------------------

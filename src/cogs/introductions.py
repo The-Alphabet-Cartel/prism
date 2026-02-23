@@ -14,7 +14,7 @@ MISSION - NEVER TO BE VIOLATED:
 Introductions handler for prism-bot. Pure logic class — no event
 registration. Called by the dispatcher in main.py.
 ----------------------------------------------------------------------------
-FILE VERSION: v1.7.0
+FILE VERSION: v1.8.0
 LAST MODIFIED: 2026-02-23
 BOT: prism-bot
 CLEAN ARCHITECTURE: Compliant
@@ -33,15 +33,20 @@ class IntroductionsHandler:
 
     def __init__(
         self,
+        bot: fluxer.Bot,
         config_manager: ConfigManager,
         logging_manager: LoggingConfigManager,
     ) -> None:
+        self.bot = bot
         self.log = logging_manager.get_logger("introductions")
+        self.guild_id = config_manager.get_int("bot", "guild_id", 0)
         self.introductions_channel_id = config_manager.get_int(
             "channels", "introductions", 0
         )
         self.saldato_role_id = config_manager.get_int("roles", "saldato", 0)
 
+        if not self.guild_id:
+            self.log.warning("Guild ID is not configured")
         if not self.introductions_channel_id:
             self.log.warning("Introductions channel ID is not configured")
         if not self.saldato_role_id:
@@ -49,10 +54,25 @@ class IntroductionsHandler:
 
     async def handle(self, message: fluxer.Message) -> None:
         """Process a message. Called by the main dispatcher."""
+        # Only act in #introductions
         if message.channel.id != self.introductions_channel_id:
             return
 
-        member = message.author
+        # Get guild from bot cache
+        guild = self.bot.get_guild(self.guild_id)
+        if guild is None:
+            self.log.error(f"Guild {self.guild_id} not found in cache")
+            return
+
+        # Get full member object (has .roles, unlike User)
+        member = guild.get_member(message.author.id)
+        if member is None:
+            self.log.warning(
+                f"Could not resolve member for user {message.author.id}"
+            )
+            return
+
+        # Skip if member already has roles beyond @everyone
         assignable_roles = [r for r in member.roles if r.name != "@everyone"]
         if assignable_roles:
             self.log.debug(
@@ -61,10 +81,7 @@ class IntroductionsHandler:
             )
             return
 
-        guild = message.guild
-        if guild is None:
-            return
-
+        # Resolve the Saldato role object
         saldato_role = guild.get_role(self.saldato_role_id)
         if saldato_role is None:
             self.log.warning(
@@ -73,6 +90,7 @@ class IntroductionsHandler:
             )
             return
 
+        # Assign role
         try:
             await member.add_roles(
                 saldato_role,

@@ -14,7 +14,7 @@ MISSION - NEVER TO BE VIOLATED:
 Temporary utility handler for prism-bot. Pure logic class — no event
 registration. Called by the dispatcher in main.py. Remove after setup.
 ----------------------------------------------------------------------------
-FILE VERSION: v1.7.0
+FILE VERSION: v1.8.0
 LAST MODIFIED: 2026-02-23
 BOT: prism-bot
 CLEAN ARCHITECTURE: Compliant
@@ -24,26 +24,37 @@ Repository: https://github.com/PapaBearDoes/bragi
 
 import fluxer
 
+from src.managers.config_manager import ConfigManager
 from src.managers.logging_config_manager import LoggingConfigManager
 
 
 class UtilityTempHandler:
     """Lists guild roles via !roles command. Temporary — remove after setup."""
 
-    def __init__(self, logging_manager: LoggingConfigManager) -> None:
+    def __init__(
+        self,
+        bot: fluxer.Bot,
+        config_manager: ConfigManager,
+        logging_manager: LoggingConfigManager,
+    ) -> None:
+        self.bot = bot
         self.log = logging_manager.get_logger("utility_temp")
+        self.guild_id = config_manager.get_int("bot", "guild_id", 0)
+
+        if not self.guild_id:
+            self.log.warning("Guild ID is not configured — !roles will not work")
 
     async def handle(self, message: fluxer.Message) -> None:
         """Process a message. Called by the main dispatcher."""
         if message.content.strip().lower() != "!roles":
             return
 
-        guild = message.guild
-        if guild is None:
-            await message.reply("❌ This command must be used in a guild.")
-            return
-
         self.log.info(f"!roles used by {message.author} in #{message.channel}")
+
+        guild = self.bot.get_guild(self.guild_id)
+        if guild is None:
+            await message.reply("❌ Guild not found in cache.")
+            return
 
         lines = ["**Guild Roles and IDs:**\n```"]
         for role in sorted(guild.roles, key=lambda r: r.position, reverse=True):
