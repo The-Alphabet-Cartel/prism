@@ -15,8 +15,8 @@ Temporary utility cog for prism-bot. Provides a !roles command that lists
 all roles and their IDs in the guild. Remove this cog once role IDs have
 been captured and added to configuration.
 ----------------------------------------------------------------------------
-FILE VERSION: v1.3.0
-LAST MODIFIED: 2026-02-22
+FILE VERSION: v1.4.0
+LAST MODIFIED: 2026-02-23
 BOT: prism-bot
 CLEAN ARCHITECTURE: Compliant
 Repository: https://github.com/PapaBearDoes/bragi
@@ -24,13 +24,12 @@ Repository: https://github.com/PapaBearDoes/bragi
 """
 
 import fluxer
-from fluxer import commands
 
 from src.managers.config_manager import ConfigManager
 from src.managers.logging_config_manager import LoggingConfigManager
 
 
-class UtilityTempCog(commands.Cog):
+class UtilityTempCog(fluxer.Cog):
     """Temporary utility commands for setup and diagnostics. Remove after use."""
 
     def __init__(
@@ -43,11 +42,10 @@ class UtilityTempCog(commands.Cog):
         self.config = config_manager
         self.log = logging_manager.get_logger("utility_temp")
 
-    @commands.command(name="roles")
-    @commands.has_permissions(administrator=True)
-    async def list_roles(self, ctx: commands.Context) -> None:
-        """Lists all roles in the guild with their IDs. Admin only."""
-        guild = ctx.guild
+    @fluxer.Bot.command(name="roles")
+    async def list_roles(self, ctx: object) -> None:
+        """Lists all roles in the guild with their IDs."""
+        guild = getattr(ctx, "guild", None)
         if guild is None:
             await ctx.send("❌ This command must be used in a guild.")
             return
@@ -59,13 +57,12 @@ class UtilityTempCog(commands.Cog):
 
         output = "\n".join(lines)
 
-        # Split if over Discord's 2000 char message limit
         if len(output) > 2000:
             chunks = []
             chunk = ["**Guild Roles and IDs:**\n```"]
             for role in sorted(guild.roles, key=lambda r: r.position, reverse=True):
                 line = f"{role.name:<40} {role.id}"
-                if sum(len(l) for l in chunk) + len(line) > 1900:
+                if sum(len(ln) for ln in chunk) + len(line) > 1900:
                     chunk.append("```")
                     chunks.append("\n".join(chunk))
                     chunk = ["```"]
@@ -77,14 +74,7 @@ class UtilityTempCog(commands.Cog):
         else:
             await ctx.send(output)
 
-        self.log.info(f"!roles command used by {ctx.author} in #{ctx.channel}")
-
-    @list_roles.error
-    async def list_roles_error(self, ctx: commands.Context, error: Exception) -> None:
-        if isinstance(error, commands.MissingPermissions):
-            await ctx.send("❌ You need Administrator permissions to use this command.")
-        else:
-            self.log.error(f"Unexpected error in !roles: {error}")
+        self.log.info(f"!roles used by {ctx.author} in #{ctx.channel}")
 
 
 def setup(
