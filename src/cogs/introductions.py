@@ -14,7 +14,7 @@ MISSION - NEVER TO BE VIOLATED:
 Introductions handler for prism-bot. Pure logic class — no event
 registration. Called by the dispatcher in main.py.
 ----------------------------------------------------------------------------
-FILE VERSION: v1.10.0
+FILE VERSION: v1.11.0
 LAST MODIFIED: 2026-02-23
 BOT: prism-bot
 CLEAN ARCHITECTURE: Compliant
@@ -99,8 +99,8 @@ class IntroductionsHandler:
 
         # Assign role
         try:
-            await member.add_roles(
-                saldato_role,
+            await member.add_role(
+                saldato_role.id,
                 reason="Introduction posted in #introductions",
             )
             self.log.success(  # type: ignore[attr-defined]
