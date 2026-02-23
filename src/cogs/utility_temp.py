@@ -11,10 +11,10 @@ MISSION - NEVER TO BE VIOLATED:
     Sustain  → Run reliably so our community always has what it needs
 
 ============================================================================
-Temporary utility handler for prism-bot. Provides a !roles command that
-lists all roles and their IDs in the guild. Remove after role IDs captured.
+Temporary utility handler for prism-bot. Pure logic class — no event
+registration. Called by the dispatcher in main.py. Remove after setup.
 ----------------------------------------------------------------------------
-FILE VERSION: v1.6.0
+FILE VERSION: v1.7.0
 LAST MODIFIED: 2026-02-23
 BOT: prism-bot
 CLEAN ARCHITECTURE: Compliant
@@ -24,61 +24,49 @@ Repository: https://github.com/PapaBearDoes/bragi
 
 import fluxer
 
-from src.managers.config_manager import ConfigManager
 from src.managers.logging_config_manager import LoggingConfigManager
 
 
-def setup(
-    bot: fluxer.Bot,
-    config_manager: ConfigManager,
-    logging_manager: LoggingConfigManager,
-) -> None:
-    """Register the !roles command listener directly on the bot."""
+class UtilityTempHandler:
+    """Lists guild roles via !roles command. Temporary — remove after setup."""
 
-    log = logging_manager.get_logger("utility_temp")
+    def __init__(self, logging_manager: LoggingConfigManager) -> None:
+        self.log = logging_manager.get_logger("utility_temp")
 
-    @bot.event
-    async def on_message(message: fluxer.Message) -> None:
-        try:
-            if message.author.bot:
-                return
+    async def handle(self, message: fluxer.Message) -> None:
+        """Process a message. Called by the main dispatcher."""
+        if message.content.strip().lower() != "!roles":
+            return
 
-            if message.content.strip().lower() != "!roles":
-                return
+        guild = message.guild
+        if guild is None:
+            await message.reply("❌ This command must be used in a guild.")
+            return
 
-            guild = message.guild
-            if guild is None:
-                await message.reply("❌ This command must be used in a guild.")
-                return
+        self.log.info(f"!roles used by {message.author} in #{message.channel}")
 
-            log.info(f"!roles used by {message.author} in #{message.channel}")
+        lines = ["**Guild Roles and IDs:**\n```"]
+        for role in sorted(guild.roles, key=lambda r: r.position, reverse=True):
+            lines.append(f"{role.name:<40} {role.id}")
+        lines.append("```")
 
-            lines = ["**Guild Roles and IDs:**\n```"]
-            for role in sorted(guild.roles, key=lambda r: r.position, reverse=True):
-                lines.append(f"{role.name:<40} {role.id}")
-            lines.append("```")
+        output = "\n".join(lines)
 
-            output = "\n".join(lines)
-
-            if len(output) <= 2000:
-                await message.reply(output)
-            else:
-                chunks = []
-                chunk = ["**Guild Roles and IDs:**\n```"]
-                for role in sorted(
-                    guild.roles, key=lambda r: r.position, reverse=True
-                ):
-                    line = f"{role.name:<40} {role.id}"
-                    if sum(len(ln) for ln in chunk) + len(line) > 1900:
-                        chunk.append("```")
-                        chunks.append("\n".join(chunk))
-                        chunk = ["```"]
-                    chunk.append(line)
-                chunk.append("```")
-                chunks.append("\n".join(chunk))
-                for chunk in chunks:
-                    await message.reply(chunk)
-        except Exception as e:
-            import traceback
-            log.error(f"Exception in utility_temp on_message: {e}")
-            log.error(traceback.format_exc())
+        if len(output) <= 2000:
+            await message.reply(output)
+        else:
+            chunks = []
+            chunk = ["**Guild Roles and IDs:**\n```"]
+            for role in sorted(
+                guild.roles, key=lambda r: r.position, reverse=True
+            ):
+                line = f"{role.name:<40} {role.id}"
+                if sum(len(ln) for ln in chunk) + len(line) > 1900:
+                    chunk.append("```")
+                    chunks.append("\n".join(chunk))
+                    chunk = ["```"]
+                chunk.append(line)
+            chunk.append("```")
+            chunks.append("\n".join(chunk))
+            for chunk in chunks:
+                await message.reply(chunk)
