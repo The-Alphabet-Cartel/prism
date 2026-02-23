@@ -17,8 +17,8 @@ client, loads handlers, and starts the bot.
 Single on_message dispatcher pattern used because fluxer-py only supports
 one registered handler per event type.
 ----------------------------------------------------------------------------
-FILE VERSION: v1.7.0
-LAST MODIFIED: 2026-02-23
+FILE VERSION: v1.8.0
+LAST MODIFIED: 2026-02-24
 BOT: prism-bot
 CLEAN ARCHITECTURE: Compliant
 Repository: https://github.com/PapaBearDoes/bragi
@@ -92,7 +92,7 @@ def main() -> None:
     log.success("Loaded handler: introductions")  # type: ignore[attr-defined]
 
     utility_temp = UtilityTempHandler(bot, config_manager, logging_manager)
-    log.success("Loaded handler: utility_temp (TEMPORARY — remove after setup)")  # type: ignore[attr-defined]
+    log.success("Loaded handler: utility (staff commands)")  # type: ignore[attr-defined]
 
     # -------------------------------------------------------------------------
     # Single on_message dispatcher — routes to all handlers in order

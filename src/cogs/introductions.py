@@ -14,8 +14,8 @@ MISSION - NEVER TO BE VIOLATED:
 Introductions handler for prism-bot. Pure logic class — no event
 registration. Called by the dispatcher in main.py.
 ----------------------------------------------------------------------------
-FILE VERSION: v1.13.0
-LAST MODIFIED: 2026-02-23
+FILE VERSION: v1.14.0
+LAST MODIFIED: 2026-02-24
 BOT: prism-bot
 CLEAN ARCHITECTURE: Compliant
 Repository: https://github.com/PapaBearDoes/bragi
@@ -105,7 +105,17 @@ class IntroductionsHandler:
                 reason="Introduction posted in #introductions",
             )
             self.log.success(  # type: ignore[attr-defined]
-                f"Assigned Saldato to {member} (ID: {message.author.id})"
+                f"Assigned Saldato to {message.author} (ID: {message.author.id})"
+            )
+            await message.reply(
+                "✨ **Welcome to The Alphabet Cartel!** ✨\n\n"
+                "Your introduction has been received and the **Saldato** role has been "
+                "bestowed upon you — consider yourself family. 🏳️‍🌈\n\n"
+                "The full server is now open to you. We're a community built on "
+                "authenticity, compassion, and a shared love of gaming. Take a look "
+                "around, introduce yourself further if you'd like, and don't hesitate "
+                "to ask if you need anything.\n\n"
+                "*We're glad you're here.* 💜"
             )
         except fluxer.Forbidden:
             self.log.error(

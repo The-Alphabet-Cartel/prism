@@ -11,11 +11,11 @@ MISSION - NEVER TO BE VIOLATED:
     Sustain  → Run reliably so our community always has what it needs
 
 ============================================================================
-Temporary utility handler for prism-bot. Pure logic class — no event
-registration. Called by the dispatcher in main.py. Remove after setup.
+Utility handler for prism-bot. Provides staff commands for server management.
+Currently implements !roles (admin-only) for listing guild roles and IDs.
 ----------------------------------------------------------------------------
-FILE VERSION: v1.10.0
-LAST MODIFIED: 2026-02-23
+FILE VERSION: v2.0.0
+LAST MODIFIED: 2026-02-24
 BOT: prism-bot
 CLEAN ARCHITECTURE: Compliant
 Repository: https://github.com/PapaBearDoes/bragi
@@ -49,21 +49,34 @@ class UtilityTempHandler:
         if message.content.strip().lower() != "!roles":
             return
 
-        self.log.info(f"!roles used by {message.author} in #{message.channel}")
-
+        # Fetch member to check roles for admin status
         guild_id = message.channel.guild_id
         try:
             guild = await self.bot.fetch_guild(guild_id)
-        except Exception as e:
-            await message.reply(f"❌ Could not fetch guild: {e}")
-            return
-
-        # Fetch roles list from guild
-        try:
+            member = await guild.fetch_member(message.author.id)
             roles = await guild.fetch_roles()
         except Exception as e:
-            await message.reply(f"❌ Could not fetch roles: {e}")
+            self.log.error(f"Could not fetch guild data: {e}")
             return
+
+        # Build a set of role IDs the member has
+        member_role_ids = {r.id for r in member.roles}
+
+        # Check if any of the member's roles have administrator permission
+        # Fluxer uses the same permissions bitfield as Discord: 0x8 = Administrator
+        is_admin = any(
+            r for r in roles
+            if r.id in member_role_ids and getattr(r, "permissions", 0) & 0x8
+        )
+
+        if not is_admin:
+            self.log.info(
+                f"!roles denied for {message.author} — not an administrator"
+            )
+            await message.reply("❌ You need Administrator permissions to use this command.")
+            return
+
+        self.log.info(f"!roles used by {message.author} in #{message.channel}")
 
         lines = ["**Guild Roles and IDs:**\n```"]
         for role in sorted(roles, key=lambda r: r.position, reverse=True):
