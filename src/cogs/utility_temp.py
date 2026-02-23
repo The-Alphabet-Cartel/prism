@@ -15,7 +15,7 @@ Temporary utility cog for prism-bot. Provides a !roles command that lists
 all roles and their IDs in the guild. Remove this cog once role IDs have
 been captured and added to configuration.
 ----------------------------------------------------------------------------
-FILE VERSION: v1.0.0
+FILE VERSION: v1.1.0
 LAST MODIFIED: 2026-02-22
 BOT: prism-bot
 CLEAN ARCHITECTURE: Compliant
@@ -23,8 +23,8 @@ Repository: https://github.com/PapaBearDoes/bragi
 ============================================================================
 """
 
-import discord
-from discord.ext import commands
+import fluxer
+from fluxer.ext import commands
 
 from src.managers.config_manager import ConfigManager
 from src.managers.logging_config_manager import LoggingConfigManager

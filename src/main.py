@@ -14,7 +14,7 @@ MISSION - NEVER TO BE VIOLATED:
 Main entry point for prism-bot. Initialises managers, configures the Fluxer
 client, loads cogs, and starts the bot.
 ----------------------------------------------------------------------------
-FILE VERSION: v1.1.0
+FILE VERSION: v1.2.0
 LAST MODIFIED: 2026-02-22
 BOT: prism-bot
 CLEAN ARCHITECTURE: Compliant
@@ -25,8 +25,8 @@ Repository: https://github.com/PapaBearDoes/bragi
 import asyncio
 import sys
 
-import discord
-from discord.ext import commands
+import fluxer
+from fluxer.ext import commands
 
 from src.managers.config_manager import create_config_manager
 from src.managers.logging_config_manager import create_logging_config_manager
@@ -73,7 +73,7 @@ async def main() -> None:
     # Initialise Fluxer client
     # Note: Fluxer does not support intents yet — pass default intents
     # -------------------------------------------------------------------------
-    intents = discord.Intents.default()
+    intents = fluxer.Intents.default()
     intents.message_content = True
     intents.members = True
 
