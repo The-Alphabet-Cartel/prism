@@ -14,7 +14,7 @@ MISSION - NEVER TO BE VIOLATED:
 Introductions handler for prism-bot. Pure logic class — no event
 registration. Called by the dispatcher in main.py.
 ----------------------------------------------------------------------------
-FILE VERSION: v1.8.0
+FILE VERSION: v1.9.0
 LAST MODIFIED: 2026-02-23
 BOT: prism-bot
 CLEAN ARCHITECTURE: Compliant
@@ -58,10 +58,12 @@ class IntroductionsHandler:
         if message.channel.id != self.introductions_channel_id:
             return
 
-        # Get guild from bot cache
-        guild = self.bot.get_guild(self.guild_id)
-        if guild is None:
-            self.log.error(f"Guild {self.guild_id} not found in cache")
+        # Get guild via fetch (fluxer-py uses async fetch, not sync get)
+        guild_id = message.channel.guild_id
+        try:
+            guild = await self.bot.fetch_guild(guild_id)
+        except Exception as e:
+            self.log.error(f"Could not fetch guild {guild_id}: {e}")
             return
 
         # Get full member object (has .roles, unlike User)

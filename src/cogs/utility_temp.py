@@ -14,7 +14,7 @@ MISSION - NEVER TO BE VIOLATED:
 Temporary utility handler for prism-bot. Pure logic class — no event
 registration. Called by the dispatcher in main.py. Remove after setup.
 ----------------------------------------------------------------------------
-FILE VERSION: v1.8.0
+FILE VERSION: v1.9.0
 LAST MODIFIED: 2026-02-23
 BOT: prism-bot
 CLEAN ARCHITECTURE: Compliant
@@ -51,9 +51,11 @@ class UtilityTempHandler:
 
         self.log.info(f"!roles used by {message.author} in #{message.channel}")
 
-        guild = self.bot.get_guild(self.guild_id)
-        if guild is None:
-            await message.reply("❌ Guild not found in cache.")
+        guild_id = message.channel.guild_id
+        try:
+            guild = await self.bot.fetch_guild(guild_id)
+        except Exception as e:
+            await message.reply(f"❌ Could not fetch guild: {e}")
             return
 
         lines = ["**Guild Roles and IDs:**\n```"]
