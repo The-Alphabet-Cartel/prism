@@ -14,7 +14,7 @@ MISSION - NEVER TO BE VIOLATED:
 Temporary utility handler for prism-bot. Pure logic class — no event
 registration. Called by the dispatcher in main.py. Remove after setup.
 ----------------------------------------------------------------------------
-FILE VERSION: v1.9.0
+FILE VERSION: v1.10.0
 LAST MODIFIED: 2026-02-23
 BOT: prism-bot
 CLEAN ARCHITECTURE: Compliant
@@ -58,8 +58,15 @@ class UtilityTempHandler:
             await message.reply(f"❌ Could not fetch guild: {e}")
             return
 
+        # Fetch roles list from guild
+        try:
+            roles = await guild.fetch_roles()
+        except Exception as e:
+            await message.reply(f"❌ Could not fetch roles: {e}")
+            return
+
         lines = ["**Guild Roles and IDs:**\n```"]
-        for role in sorted(guild.roles, key=lambda r: r.position, reverse=True):
+        for role in sorted(roles, key=lambda r: r.position, reverse=True):
             lines.append(f"{role.name:<40} {role.id}")
         lines.append("```")
 
@@ -70,9 +77,7 @@ class UtilityTempHandler:
         else:
             chunks = []
             chunk = ["**Guild Roles and IDs:**\n```"]
-            for role in sorted(
-                guild.roles, key=lambda r: r.position, reverse=True
-            ):
+            for role in sorted(roles, key=lambda r: r.position, reverse=True):
                 line = f"{role.name:<40} {role.id}"
                 if sum(len(ln) for ln in chunk) + len(line) > 1900:
                     chunk.append("```")

@@ -14,7 +14,7 @@ MISSION - NEVER TO BE VIOLATED:
 Introductions handler for prism-bot. Pure logic class — no event
 registration. Called by the dispatcher in main.py.
 ----------------------------------------------------------------------------
-FILE VERSION: v1.9.0
+FILE VERSION: v1.10.0
 LAST MODIFIED: 2026-02-23
 BOT: prism-bot
 CLEAN ARCHITECTURE: Compliant
@@ -66,12 +66,11 @@ class IntroductionsHandler:
             self.log.error(f"Could not fetch guild {guild_id}: {e}")
             return
 
-        # Get full member object (has .roles, unlike User)
-        member = guild.get_member(message.author.id)
-        if member is None:
-            self.log.warning(
-                f"Could not resolve member for user {message.author.id}"
-            )
+        # Get full member object via fetch (has .roles, unlike User)
+        try:
+            member = await guild.fetch_member(message.author.id)
+        except Exception as e:
+            self.log.warning(f"Could not fetch member {message.author.id}: {e}")
             return
 
         # Skip if member already has roles beyond @everyone
@@ -83,8 +82,14 @@ class IntroductionsHandler:
             )
             return
 
-        # Resolve the Saldato role object
-        saldato_role = guild.get_role(self.saldato_role_id)
+        # Fetch roles and find Saldato by ID
+        try:
+            roles = await guild.fetch_roles()
+        except Exception as e:
+            self.log.error(f"Could not fetch roles for guild {guild_id}: {e}")
+            return
+
+        saldato_role = next((r for r in roles if r.id == self.saldato_role_id), None)
         if saldato_role is None:
             self.log.warning(
                 f"Saldato role ID {self.saldato_role_id} not found in guild — "
