@@ -29,7 +29,7 @@ from src.managers.logging_config_manager import LoggingConfigManager
 
 
 class IntroductionsHandler:
-    """Assigns Saldato role to members posting in #introductions."""
+    """Assigns Base role to members posting in #introductions."""
 
     def __init__(
         self,
@@ -50,7 +50,7 @@ class IntroductionsHandler:
         if not self.introductions_channel_id:
             self.log.warning("Introductions channel ID is not configured")
         if not self.saldato_role_id:
-            self.log.warning("Saldato role ID is not configured")
+            self.log.warning("Base role ID is not configured")
 
     async def handle(self, message: fluxer.Message) -> None:
         """Process a message. Called by the main dispatcher."""
@@ -79,12 +79,12 @@ class IntroductionsHandler:
             )
             return
 
-        # Find Saldato role
+        # Find Base role
         saldato_role = next((r for r in roles if r.id == self.saldato_role_id), None)
         if saldato_role is None:
             self.log.warning(
-                f"Saldato role ID {self.saldato_role_id} not found in guild — "
-                "check PRISM_SALDATO_ROLE_ID in .env"
+                f"Base role ID {self.saldato_role_id} not found in guild — "
+                "check PRISM_BASE_ROLE_ID in .env"
             )
             return
 
@@ -96,7 +96,7 @@ class IntroductionsHandler:
                 reason="Introduction posted in #introductions",
             )
             self.log.success(  # type: ignore[attr-defined]
-                f"Assigned Saldato to {message.author} (ID: {message.author.id})"
+                f"Assigned Base to {message.author} (ID: {message.author.id})"
             )
             await message.reply(
                 "✨ **Welcome to The Alphabet Cartel!** ✨\n\n"
@@ -110,8 +110,8 @@ class IntroductionsHandler:
             )
         except fluxer.Forbidden:
             self.log.error(
-                f"Missing permissions to assign Saldato to {message.author} — "
+                f"Missing permissions to assign Base to {message.author} — "
                 "check role hierarchy"
             )
         except fluxer.HTTPException as e:
-            self.log.error(f"API error assigning Saldato to {message.author}: {e}")
+            self.log.error(f"API error assigning Base to {message.author}: {e}")
