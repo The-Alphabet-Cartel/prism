@@ -68,7 +68,7 @@ class ConfigManager:
             "COMMAND_PREFIX": ("bot", "command_prefix"),
             "GUILD_ID": ("bot", "guild_id"),
             "PRISM_INTRODUCTIONS_CHANNEL_ID": ("channels", "introductions"),
-            "PRISM_SALDATO_ROLE_ID": ("roles", "saldato"),
+            "PRISM_BASE_ROLE_ID": ("roles", "saldato"),
         }
         for env_key, (section, key) in env_map.items():
             value = os.environ.get(env_key)
