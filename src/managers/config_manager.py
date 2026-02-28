@@ -66,7 +66,7 @@ class ConfigManager:
             "PRISM_LOG_FILE": ("logging", "file"),
             "LOG_CONSOLE": ("logging", "console"),
             "COMMAND_PREFIX": ("bot", "command_prefix"),
-            "GUILD_ID": ("bot", "guild_id"),
+            "PRISM_GUILD_ID": ("bot", "guild_id"),
             "PRISM_INTRODUCTIONS_CHANNEL_ID": ("channels", "introductions"),
             "PRISM_BASE_ROLE_ID": ("roles", "saldato"),
         }

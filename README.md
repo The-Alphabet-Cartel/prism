@@ -61,7 +61,7 @@ Copy `.env.template` to `.env` and configure:
 | `LOG_CONSOLE` | `true` | Enable console logging |
 | `PRISM_LOG_FILE` | — | Optional log file path |
 | `COMMAND_PREFIX` | `!` | Prefix for staff commands |
-| `GUILD_ID` | — | Fluxer guild ID (**required**) |
+| `PRISM_GUILD_ID` | — | Fluxer guild ID (**required**) |
 | `PRISM_INTRODUCTIONS_CHANNEL_ID` | — | Channel ID to monitor (**required**) |
 | `PRISM_BASE_ROLE_ID` | — | Role ID to assign on introduction (**required**) |
 | `PUID` | `1000` | Container user ID |
@@ -97,7 +97,7 @@ cd prism
 
 # 2. Copy and configure environment
 cp .env.template .env
-# Edit .env — set GUILD_ID, PRISM_INTRODUCTIONS_CHANNEL_ID, and PRISM_BASE_ROLE_ID at minimum
+# Edit .env — set PRISM_GUILD_ID, PRISM_INTRODUCTIONS_CHANNEL_ID, and PRISM_BASE_ROLE_ID at minimum
 
 # 3. Create the bot token secret
 mkdir -p secrets

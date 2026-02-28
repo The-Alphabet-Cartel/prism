@@ -5,27 +5,50 @@
 # Repository: https://github.com/the-alphabet-cartel/prism
 # Community: The Alphabet Cartel - https://discord.gg/alphabetcartel
 # ============================================================================
+name: prism
+
+### Common Settings ###
+x-common: &common
+  restart: unless-stopped
+  networks:
+    - bragi-net
+
+### Common Environmental Variables ###
+x-env: &env
+  PGID: ${PGID:-1000}
+  PUID: ${PUID:-1000}
+  TZ: ${TZ:-America/Los_Angeles}
+
+### Common Healthcheck Settings ###
+x-health: &health
+  interval: 5s
+  timeout: 10s
+  retries: 3
+  start_period: 60s
+  start_interval: 30s
 
 services:
-  prism-bot:
+  prism:
     image: ghcr.io/the-alphabet-cartel/prism:latest
-    container_name: prism-bot
-    restart: unless-stopped
-    env_file: .env
+    container_name: prism
+    <<: *common
     environment:
+      <<: *env
       TOKEN_FILE: /run/secrets/prism_token
+    env_file: .env
     secrets:
       - prism_token
     volumes:
-      - /opt/bragi/bots/prism-bot/logs:/app/logs
-      - /opt/bragi/bots/prism-bot/data:/app/data
-    networks:
-      - bragi
+      - /opt/bragi/prism/logs:/app/logs
+      - /opt/bragi/prism/data:/app/data
+      - /opt/bragi/prism/config:/app/src/config
+    healthcheck:
+      <<: *health
 
 secrets:
   prism_token:
     file: ./secrets/prism_fluxer_token
 
 networks:
-  bragi:
+  bragi-net:
     external: true
