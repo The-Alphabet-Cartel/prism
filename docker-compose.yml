@@ -11,7 +11,7 @@ name: prism
 x-common: &common
   restart: unless-stopped
   networks:
-    - bragi-net
+    - prism-net
 
 ### Common Environmental Variables ###
 x-env: &env
@@ -50,5 +50,5 @@ secrets:
     file: ./secrets/prism_fluxer_token
 
 networks:
-  bragi-net:
-    external: true
+  prism-net:
+    driver: bridge
