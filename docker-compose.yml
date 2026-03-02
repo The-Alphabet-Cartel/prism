@@ -39,9 +39,9 @@ services:
     secrets:
       - prism_token
     volumes:
-      - /opt/bragi/prism/logs:/app/logs
-      - /opt/bragi/prism/data:/app/data
-      - /opt/bragi/prism/config:/app/src/config
+      - ./logs:/app/logs
+      - ./data:/app/data
+      - ./config:/app/src/config
     healthcheck:
       <<: *health
 
