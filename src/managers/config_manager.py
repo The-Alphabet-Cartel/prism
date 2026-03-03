@@ -15,8 +15,8 @@ ConfigManager for prism-bot. Loads configuration from JSON defaults, then
 overrides with .env values, then overrides sensitive values from Docker
 Secrets. Implements the three-layer config stack (Rule #4 / Rule #7).
 ----------------------------------------------------------------------------
-FILE VERSION: v1.0.0
-LAST MODIFIED: 2026-02-22
+FILE VERSION: v1.1.0
+LAST MODIFIED: 2026-03-02
 BOT: prism-bot
 CLEAN ARCHITECTURE: Compliant
 Repository: https://github.com/PapaBearDoes/bragi
@@ -34,6 +34,7 @@ log = logging.getLogger("prism-bot.config_manager")
 
 class ConfigManager:
     def __init__(self, config_path: str = "/app/src/config/prism_config.json") -> None:
+        self._config_path = config_path
         self._config: dict[str, Any] = {}
         self._load_json(config_path)
         self._apply_env_overrides()
@@ -123,6 +124,26 @@ class ConfigManager:
 
     def get_token(self) -> str:
         return self.get("bot", "token", "")
+
+    # -------------------------------------------------------------------------
+    # Hot-reload (Rule #13)
+    # -------------------------------------------------------------------------
+    def reload(self) -> None:
+        """Re-run the three-layer config stack in place.
+
+        Called by the ConfigWatcher when a JSON file changes. Env vars and
+        secrets are re-read on every reload so the full stack stays consistent.
+        The bot token is NOT reloaded — a token change requires a restart.
+        """
+        existing_token = self.get("bot", "token")
+        self._config = {}
+        self._load_json(self._config_path)
+        self._apply_env_overrides()
+        self._apply_secret_overrides()
+        # Preserve the token from the previous load — don't break the connection
+        if existing_token:
+            self._config.setdefault("bot", {})["token"] = existing_token
+        log.info("Config reloaded from disk")
 
 
 def create_config_manager(

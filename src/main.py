@@ -17,8 +17,8 @@ client, loads handlers, and starts the bot.
 Single on_message dispatcher pattern used because fluxer-py only supports
 one registered handler per event type.
 ----------------------------------------------------------------------------
-FILE VERSION: v1.9.0
-LAST MODIFIED: 2026-02-24
+FILE VERSION: v1.10.0
+LAST MODIFIED: 2026-03-02
 BOT: prism-bot
 CLEAN ARCHITECTURE: Compliant
 Repository: https://github.com/PapaBearDoes/bragi
@@ -31,6 +31,7 @@ import traceback
 import fluxer
 
 from src.managers.config_manager import create_config_manager
+from src.managers.config_watcher import create_config_watcher
 from src.managers.logging_config_manager import create_logging_config_manager
 
 
@@ -95,6 +96,11 @@ def main() -> None:
     log.success("Loaded handler: utility (staff commands)")  # type: ignore[attr-defined]
 
     # -------------------------------------------------------------------------
+    # Initialise config watcher (Rule #13)
+    # -------------------------------------------------------------------------
+    config_watcher = create_config_watcher()
+
+    # -------------------------------------------------------------------------
     # Single on_message dispatcher — routes to all handlers in order
     # -------------------------------------------------------------------------
     @bot.event
@@ -126,6 +132,18 @@ def main() -> None:
     @bot.event
     async def on_ready() -> None:
         log.success(f"prism-bot connected as {bot.user} (ID: {bot.user.id})")  # type: ignore[attr-defined]
+
+        # Register hot-reload callback and start watcher (Rule #13)
+        async def _on_config_change(filename: str) -> None:
+            log.info(f"Hot-reloading config: {filename}")
+            try:
+                config_manager.reload()
+                log.success(f"Config reloaded from {filename}")  # type: ignore[attr-defined]
+            except Exception as e:
+                log.error(f"Config reload failed for {filename}: {e}")
+
+        config_watcher.on_change(_on_config_change)
+        await config_watcher.start()
 
     # -------------------------------------------------------------------------
     # Start — bot.run() is blocking
