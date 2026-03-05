@@ -1,5 +1,5 @@
 # ============================================================================
-# Prism Bot - Docker Compose
+# Prism - Docker Compose
 # ============================================================================
 # FILE VERSION: v1.2.0
 # Repository: https://github.com/the-alphabet-cartel/prism
@@ -11,7 +11,7 @@ name: prism
 x-common: &common
   restart: unless-stopped
   networks:
-    - prism-net
+    - prism
 
 ### Common Environmental Variables ###
 x-env: &env
@@ -39,9 +39,9 @@ services:
     secrets:
       - prism_token
     volumes:
-      - ./logs:/app/logs
-      - ./data:/app/data
       - ./config:/app/src/config
+      - ./data:/app/data
+      - ./logs:/app/logs
     healthcheck:
       <<: *health
 
@@ -50,5 +50,5 @@ secrets:
     file: ./secrets/prism_fluxer_token
 
 networks:
-  prism-net:
+  prism:
     driver: bridge
